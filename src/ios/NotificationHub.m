@@ -40,7 +40,7 @@
 {
     self.notificationHubPath = [command.arguments objectAtIndex:0];
     self.connectionString = [command.arguments objectAtIndex:1];
-    self.userId = [command.arguments objectAtIndex:3];
+    self.tags = [command.arguments objectAtIndex:3];
     self.callbackId = command.callbackId;
     
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
@@ -89,12 +89,12 @@
     
     SBNotificationHub* hub = [[SBNotificationHub alloc] initWithConnectionString:
                               self.connectionString notificationHubPath:self.notificationHubPath];
-    NSArray* categories1 = [NSArray arrayWithObject: self.userId];
+    NSArray* categories1 = [self.tags componentsSeparatedByString:@";"];
     
     NSSet* categories = [[NSSet alloc] initWithArray:categories1];
     
 
-    [hub registerNativeWithDeviceToken:deviceToken tags:nil completion:^(NSError* error) {
+    [hub registerNativeWithDeviceToken:deviceToken tags:categories completion:^(NSError* error) {
         if (error != nil) {
             [self failWithError:error];
             return;
