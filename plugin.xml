@@ -73,7 +73,7 @@
     <source-file src="src/android/NotificationHub.java" target-dir="src/msopentech/azure" />
 
     <lib-file src="src/android/libs/google-play-services.jar" />
-    <lib-file src="src/android/libs/notification-hubs-0.1.jar" />
+    <!--<lib-file src="src/android/libs/notification-hubs-0.1.jar" />-->
     <!--<source-file src="src/android/libs/gcm.jar" target-dir="libs/" />-->
 
   </platform>
