@@ -46,6 +46,7 @@
 
   <!-- android -->
   <platform name="android">
+	<dependency id="com.google.playservices@19.0.0" />
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="NotificationHub">
         <param name="android-package" value="msopentech.azure.NotificationHub" />
@@ -79,8 +80,6 @@
   </platform>
   <!-- ios -->
   <platform name="ios">
-	 <dependency id="com.google.playservices@19.0.0" />
-  
     <config-file target="config.xml" parent="/*">
       <feature name="NotificationHub">
         <param name="ios-package" value="NotificationHub" />
