@@ -1,4 +1,4 @@
-/*
+﻿/*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements. See the NOTICE file
  distributed with this work for additional information
@@ -25,6 +25,7 @@
 @property NSString *callbackId;
 @property NSString *notificationHubPath;
 @property NSString *connectionString;
+@property NSString *userId;
 
 // Asynchronously registers the device for native notifications.
 - (void)registerApplication:(CDVInvokedUrlCommand*)command;
@@ -34,7 +35,6 @@
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSNotification *)notif;
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSNotification *)notif;
 - (void)didReceiveRemoteNotification:(NSNotification *)notif;
-- (void)didRegisterUserNotificationSettings:(NSNotification *)notif;
 
 @end
 
