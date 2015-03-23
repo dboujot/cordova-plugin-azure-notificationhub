@@ -143,7 +143,7 @@
     }
     pluginResult.keepCallback = keepCalback;
     
-    [self success:pluginResult callbackId:self.callbackId];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
 }
 
 -(void)failWithError:(NSError *)error
