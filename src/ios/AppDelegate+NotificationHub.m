@@ -44,7 +44,6 @@ static char launchNotificationKey;
     // to process notifications in cold-start situations
 - (void)createNotificationChecker:(NSNotification *)notification
 {
-	
     if (notification)
 	{
     NSDictionary *launchOptions = [notification userInfo];
@@ -62,18 +61,25 @@ static char launchNotificationKey;
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    NSLog(@"didReceiveRemoteNotificationz");
     [[NSNotificationCenter defaultCenter] postNotificationName:@"UIApplicationDidReceiveRemoteNotification" object:userInfo];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
+    NSLog(@"applicationDidBecomeActiveHUB");
     
-    
+}
+
+-(void)applicationDidFinishLaunching:(UIApplication *)application{
+    NSLog(@"applicationDidFinishLaunchingHUB");
+
 }
 
     // The accessors use an Associative Reference since you can't define a iVar in a category
     // http://developer.apple.com/library/ios/#documentation/cocoa/conceptual/objectivec/Chapters/ocAssociativeReferences.html
 - (NSMutableArray *)launchNotification
 {
+    
     return objc_getAssociatedObject(self, &launchNotificationKey);
 }
 
@@ -85,6 +91,14 @@ static char launchNotificationKey;
 - (void)dealloc
 {
     self.launchNotification	= nil; // clear the association and release the object
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+fetchCompletionHandler:(void (^)   (UIBackgroundFetchResult))completionHandler {
+    NSLog(@"Notification receivedHUB: %@", userInfo);
+    [self setLaunchNotification:userInfo];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"UIApplicationDidReceiveRemoteNotification" object:userInfo];
+    completionHandler(UIBackgroundFetchResultNewData);
 }
 
 @end

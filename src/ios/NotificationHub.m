@@ -17,12 +17,15 @@
 
 #import "NotificationHub.h"
 #import <WindowsAzureMessaging/WindowsAzureMessaging.h>
+#import "AppDelegate+NotificationHub.h"
 
 @implementation NotificationHub {
 
 }
 
 - (void)pluginInitialize {
+    NSLog(@"pluginInitialize");
+    
     // apply to our custom events since only AppDelegate can receive corresponding events
     // see iOS platform Quirks on plugin home page to get further instructions
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -30,17 +33,26 @@
                                                  name:@"UIApplicationDidRegisterForRemoteNotifications" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didFailToRegisterForRemoteNotificationsWithError:)
-                                                 name:@"UIApplicationDidFailToRegisterForRemoteNotifications" object:nil];
+                                            name:@"UIApplicationDidFailToRegisterForRemoteNotifications" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveRemoteNotification:)
                                                  name:@"UIApplicationDidReceiveRemoteNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(didReceiveRemoteNotification:)
+                                                 name:@"UIApplicationLaunchOptionsRemoteNotificationKey" object:nil];
+    
+    
+//@"UIApplicationLaunchOptionsRemoteNotificationKey"
+    
 }
 
 - (void)registerApplication:(CDVInvokedUrlCommand*)command
 {
+    NSLog(@"registerApplication");
+
     self.notificationHubPath = [command.arguments objectAtIndex:0];
     self.connectionString = [command.arguments objectAtIndex:1];
-    self.userId = [command.arguments objectAtIndex:3];
+    self.tags = [command.arguments objectAtIndex:3];
     self.callbackId = command.callbackId;
     
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
@@ -60,6 +72,15 @@
 #else
     [[UIApplication sharedApplication] registerForRemoteNotificationTypes: UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound];
 #endif
+    if ([self.appDelegate launchNotification]){
+        NSLog(@"didReceiveRemoteNotificationExtern");
+        NSMutableDictionary* apsInfo = [[self.appDelegate launchNotification] objectForKey:@"aps"];
+        NSMutableDictionary* mutableapsInfor =  apsInfo.mutableCopy;
+        [mutableapsInfor setObject:@(YES) forKey:@"ColdStart"];
+        [self.appDelegate setLaunchNotification:nil];
+
+        [self reportResult:mutableapsInfor keepCallback:[NSNumber numberWithInteger: TRUE]];
+    }
 }
 
 - (void)unregisterApplication:(CDVInvokedUrlCommand*)command
@@ -89,12 +110,11 @@
     
     SBNotificationHub* hub = [[SBNotificationHub alloc] initWithConnectionString:
                               self.connectionString notificationHubPath:self.notificationHubPath];
-    NSArray* categories1 = [NSArray arrayWithObject: self.userId];
+    NSArray* categories1 = [self.tags componentsSeparatedByString:@";"];
     
     NSSet* categories = [[NSSet alloc] initWithArray:categories1];
-    
 
-    [hub registerNativeWithDeviceToken:deviceToken tags:nil completion:^(NSError* error) {
+    [hub registerNativeWithDeviceToken:deviceToken tags:categories completion:^(NSError* error) {
         if (error != nil) {
             [self failWithError:error];
             return;
@@ -123,6 +143,7 @@
 
 - (void)didReceiveRemoteNotification:(NSNotification *)notif
 {
+    NSLog(@"didReceiveRemoteNotification");
     NSDictionary* userInfo = notif.object;
     NSDictionary* apsInfo = [userInfo objectForKey:@"aps"];
     
@@ -132,6 +153,7 @@
 -(void)reportResult:(NSDictionary*)result keepCallback:(NSNumber*)keepCalback
 {
     if (self.callbackId == nil) return;
+    
     
     CDVPluginResult* pluginResult;
     if (result != nil)
@@ -143,7 +165,7 @@
     }
     pluginResult.keepCallback = keepCalback;
     
-    [self success:pluginResult callbackId:self.callbackId];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
 }
 
 -(void)failWithError:(NSError *)error
