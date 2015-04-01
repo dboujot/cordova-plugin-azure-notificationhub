@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Licensed under the Apache License, Version 2.0 (the "License")
 * http://www.apache.org/licenses/LICENSE-2.0
 *
@@ -30,6 +30,7 @@ namespace Cordova.Extension.Commands
         private const string PluginChannelId = "cordova.notificationhub.plugin";
         private string pushNotificationCallback = null;
 
+
         /// <summary>
         /// Asynchronously registers the device for native notifications.
         /// </summary>
@@ -42,7 +43,7 @@ namespace Cordova.Extension.Commands
 
                 var notificationHubPath = args[0];
                 var connectionString = args[1];
-                var userId = args[3];
+                var tags = args[3];
                 this.pushNotificationCallback = args[2];
 
                 if (string.IsNullOrEmpty(notificationHubPath))
@@ -67,13 +68,13 @@ namespace Cordova.Extension.Commands
                 if (channel == null)
                 {
                     channel = new HttpNotificationChannel(PluginChannelId);
-                    channel.ChannelUriUpdated += (o, res) => CompleteApplicationRegistration(res.ChannelUri.ToString(), notificationHubPath, connectionString, userId);
+                    channel.ChannelUriUpdated += (o, res) => CompleteApplicationRegistration(res.ChannelUri.ToString(), notificationHubPath, connectionString, tags);
                     channel.Open();
                     channel.BindToShellToast();
                 }
                 else
                 {
-                    CompleteApplicationRegistration(channel.ChannelUri.ToString(), notificationHubPath, connectionString, userId);
+                    CompleteApplicationRegistration(channel.ChannelUri.ToString(), notificationHubPath, connectionString, tags);
                 }
 
                 channel.ShellToastNotificationReceived += PushChannel_ShellToastNotificationReceived;
@@ -121,12 +122,13 @@ namespace Cordova.Extension.Commands
             }
         }
 
-        private async void CompleteApplicationRegistration(string channelUri, string notificationHubPath, string connectionString, string userId)
+        private async void CompleteApplicationRegistration(string channelUri, string notificationHubPath, string connectionString, string tagsString)
         {
             try
             {
                 var hub = new Microsoft.WindowsAzure.Messaging.NotificationHub(notificationHubPath, connectionString);
-                var registration = await hub.RegisterNativeAsync(channelUri, new string[] { userId });
+                string[] tags = tagsString.Split(';');
+                var registration = await hub.RegisterNativeAsync(channelUri, tags);
 
                 var regInfo = new RegisterResult();
                 regInfo.RegistrationId = registration.RegistrationId;
@@ -153,6 +155,7 @@ namespace Cordova.Extension.Commands
             Toast toast = new Toast();
             toast.Title = e.Collection["wp:Text1"];
             toast.Subtitle = e.Collection["wp:Text2"];
+            toast.Param = e.Collection.ContainsKey("wp:Param")?e.Collection["wp:Param"] :"";
             PluginResult result = new PluginResult(PluginResult.Status.OK, toast);
 
             Deployment.Current.Dispatcher.BeginInvoke(() =>
@@ -206,6 +209,9 @@ namespace Cordova.Extension.Commands
 
             [DataMember(Name = "text2", IsRequired = false)]
             public string Subtitle { get; set; }
+
+            [DataMember(Name = "param", IsRequired = false)]
+            public string Param { get; set; }
         }
     }
 }
