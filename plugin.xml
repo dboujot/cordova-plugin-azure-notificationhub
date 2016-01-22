@@ -46,7 +46,10 @@
 
   <!-- android -->
   <platform name="android">
-	<dependency id="com.google.playservices@19.0.1" />
+  	<!-- cordova@4.* -->
+	<dependency id="com.google.playservices@19.0.0" />
+  	<!-- cordova@5.* -->
+	<!-- <dependency id="com.google.playservices@19.0.1" /> -->
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="NotificationHub">
         <param name="android-package" value="msopentech.azure.NotificationHub" />
